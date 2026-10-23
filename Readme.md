@@ -135,4 +135,3 @@ Folders created at runtime (all git-ignored): `videos/`, `audios/`, `jsons/`, `e
 
 Transcription uses [OpenAI Whisper](https://github.com/openai/whisper) (MIT License). Embeddings and answers are served locally by [Ollama](https://ollama.com/).
 
-This project is based on an existing open-source RAG lecture assistant, adapted and fixed to run end to end. Add the original author and repository link here, and check the original license before redistributing.
