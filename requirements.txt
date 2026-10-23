@@ -1,0 +1,8 @@
+streamlit>=1.30
+pandas
+scikit-learn
+joblib
+requests
+tqdm
+python-dotenv
+openai-whisper

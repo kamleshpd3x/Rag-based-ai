@@ -1,0 +1,13 @@
+audios/
+unused/
+__pycache__/
+jsons/
+logs/
+.venv/
+.freebuff/
+backup/
+whisper/
+.env
+embeddings.joblib
+embeddings/
+videos/
