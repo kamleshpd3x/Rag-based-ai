@@ -119,7 +119,6 @@ Folders created at runtime (all git-ignored): `videos/`, `audios/`, `jsons/`, `e
 ## Known limitations
 
 - Embeddings are rebuilt from **all** transcripts in `jsons/`, so older lectures stay in the knowledge base when you process a new video. Delete the contents of `jsons/` and `embeddings/` to start fresh.
-- If you upload a different video with the same filename as an earlier one, the old audio file is reused. Delete the matching file in `audios/` or rename the video.
 - The "Reset session" button removes the uploaded video but not the generated audio, transcripts or embeddings.
 - Unrelated questions may still receive an answer built from loosely related chunks, because relevance is not filtered by a similarity threshold.
 - Answers on a CPU-only machine can be slow and may hit the 60-second LLM timeout.

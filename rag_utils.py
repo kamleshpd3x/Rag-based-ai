@@ -3,6 +3,7 @@ import subprocess
 import json
 import hashlib
 import logging
+from functools import lru_cache
 from pathlib import Path
 from typing import List, Tuple, Dict, Any
 
@@ -62,8 +63,8 @@ def convert_video_to_audio(video_path: str) -> str:
     # Build a deterministic audio filename based on the video name
     audio_name = f"{video_path.stem}.mp3"
     audio_path = Path("audios") / audio_name
-    # Skip conversion if already exists
-    if audio_path.is_file():
+    # Skip conversion only if the audio is newer than the video (a replaced video must be re-extracted)
+    if audio_path.is_file() and audio_path.stat().st_mtime >= video_path.stat().st_mtime:
         logger.info("Audio already exists: %s", audio_path)
         return str(audio_path)
     cmd = [
@@ -84,6 +85,14 @@ def convert_video_to_audio(video_path: str) -> str:
 # Whisper transcription
 # ---------------------------------------------------------------------------
 
+@lru_cache(maxsize=1)
+def _whisper_model():
+    """Load Whisper once per process instead of on every lecture."""
+    import whisper  # Imported lazily to avoid heavy import when not needed
+
+    return whisper.load_model("base")
+
+
 def transcribe_audio(
     audio_path: str, language: str = "en", task: str = "transcribe"
 ) -> str:
@@ -93,8 +102,6 @@ def transcribe_audio(
     ``start``, ``end`` and ``text`` – plus a ``text`` field with the full
     transcription.
     """
-    import whisper  # Imported lazily to avoid heavy import when not needed
-
     ensure_dirs()
     audio_path = Path(audio_path)
     if not audio_path.is_file():
@@ -102,7 +109,7 @@ def transcribe_audio(
     # Derive a simple *number* and *title* from the filename (e.g. "01 Lecture.mp3")
     number = audio_path.stem.split(" ")[0]
     title = audio_path.stem
-    model = whisper.load_model("base")
+    model = _whisper_model()
     logger.info("Transcribing %s with Whisper (language=%s, task=%s)", audio_path, language, task)
     result = model.transcribe(str(audio_path), language=language, task=task)
     chunks = []
@@ -304,6 +311,9 @@ def process_video(video_path: str, language: str = "en") -> str:
     """
     audio = convert_video_to_audio(video_path)
     trans_json = transcribe_audio(audio, language=language)
+    with open(trans_json, encoding="utf-8") as f:
+        if not json.load(f)["chunks"]:
+            raise ValueError("No speech found in the video's audio track.")
     # Re‑build the whole embedding store – cheap for a demo with a few files
     embed_path = build_embeddings()
     return embed_path

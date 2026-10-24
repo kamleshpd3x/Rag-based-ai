@@ -66,10 +66,11 @@ if uploaded:
     # The file uploader keeps its value across reruns, so only save/reset when a
     # *new* file arrives. Doing it unconditionally wiped the "processed" flag on
     # every interaction (e.g. typing a question), hiding the Q&A panel.
-    if st.session_state.get("uploaded_name") != uploaded.name:
+    # Compare file_id, not name: a different video re-uploaded as "video.mp4" must still be saved.
+    if st.session_state.get("uploaded_id") != uploaded.file_id:
         video_path = save_uploaded_file(uploaded)
         st.session_state.video_path = video_path
-        st.session_state.uploaded_name = uploaded.name
+        st.session_state.uploaded_id = uploaded.file_id
         # Reset previous processing if a new video is uploaded
         st.session_state.processed = False
         st.session_state.emb_path = None
